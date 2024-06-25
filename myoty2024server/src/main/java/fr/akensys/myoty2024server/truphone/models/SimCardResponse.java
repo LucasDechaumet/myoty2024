@@ -7,17 +7,17 @@ import java.util.Map;
 @Data
 public class SimCardResponse {
 
-    private String iccid;
+    private Long iccid;
     private String label;
     private String description;
     private String simType;
-    private String primaryMsisdn;
+    private Long primaryMsisdn;
     private List<String> msisdns;
     private String primaryImsi;
     private List<String> imsis;
     private Map<String, String> gsmKeys;
     private Dates dates;
-    private String imei;
+    private Long imei;
     private Subscription subscription;
     private List<String> attributes;
     private List<Tags> tags;
@@ -59,9 +59,7 @@ public class SimCardResponse {
     @Data
     public static class Tags 
     {
-        private List<String> simCards;
         private String label;
-        private String description;
     }
 }
 
