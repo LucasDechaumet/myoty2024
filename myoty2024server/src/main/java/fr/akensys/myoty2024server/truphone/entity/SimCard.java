@@ -1,12 +1,17 @@
 package fr.akensys.myoty2024server.truphone.entity;
 
 import java.time.LocalDateTime;
+import java.util.List;
+
 import org.hibernate.annotations.CreationTimestamp;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,6 +22,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Table(name = "sim_card", uniqueConstraints = @UniqueConstraint(columnNames = "iccid"))
 public class SimCard {
 
     @Id
@@ -29,15 +35,17 @@ public class SimCard {
     @CreationTimestamp
     private LocalDateTime updated_at;
 
-    private Long iccid; 
+    @Column(unique = true)
+    private Long iccid;  
+
     private String label;
     private Long primaryMsisdn;
     private String rate_plan; 
     private String sim_status; 
-    private boolean smsMo; 
-    private boolean smsMt;
+    private String smsMo; 
+    private String smsMt;
     private Long imei; 
-    private String tags; 
+    private List<String> tags;
 
 }
 

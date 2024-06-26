@@ -41,13 +41,13 @@ public class SimCardResponse {
 
     @Data
     public static class BearerServices {
-        private boolean voiceMo;
-        private boolean voiceMt;
-        private boolean smsMo;
-        private boolean smsMt;
-        private boolean gprs;
-        private boolean csd;
-        private boolean ussd;
+        private String voiceMo;
+        private String voiceMt;
+        private String smsMo;
+        private String smsMt;
+        private String gprs;
+        private String csd;
+        private String ussd;
     }
 
     @Data
@@ -59,7 +59,9 @@ public class SimCardResponse {
     @Data
     public static class Tags 
     {
+        private List<String> simCards;
         private String label;
+        private String description;
     }
 }
 
