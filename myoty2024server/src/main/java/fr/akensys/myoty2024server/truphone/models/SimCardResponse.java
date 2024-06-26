@@ -7,17 +7,17 @@ import java.util.Map;
 @Data
 public class SimCardResponse {
 
-    private String iccid;
+    private Long iccid;
     private String label;
     private String description;
     private String simType;
-    private String primaryMsisdn;
+    private Long primaryMsisdn;
     private List<String> msisdns;
     private String primaryImsi;
     private List<String> imsis;
     private Map<String, String> gsmKeys;
     private Dates dates;
-    private String imei;
+    private Long imei;
     private Subscription subscription;
     private List<String> attributes;
     private List<Tags> tags;
@@ -41,13 +41,13 @@ public class SimCardResponse {
 
     @Data
     public static class BearerServices {
-        private boolean voiceMo;
-        private boolean voiceMt;
-        private boolean smsMo;
-        private boolean smsMt;
-        private boolean gprs;
-        private boolean csd;
-        private boolean ussd;
+        private String voiceMo;
+        private String voiceMt;
+        private String smsMo;
+        private String smsMt;
+        private String gprs;
+        private String csd;
+        private String ussd;
     }
 
     @Data
