@@ -32,6 +32,7 @@ public class SimCard {
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime created_at;
+
     @CreationTimestamp
     private LocalDateTime updated_at;
 
@@ -39,12 +40,19 @@ public class SimCard {
     private Long iccid;  
 
     private String label;
+
     private Long primaryMsisdn;
-    private String rate_plan; 
-    private String sim_status; 
-    private String smsMo; 
+
+    private String rate_plan;
+
+    private String sim_status;
+
+    private String smsMo;
+
     private String smsMt;
-    private Long imei; 
+
+    private Long imei;
+
     private List<String> tags;
 
 }

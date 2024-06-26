@@ -6,8 +6,11 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import fr.akensys.myoty2024server.error.SimCardNotFoundException;
 import fr.akensys.myoty2024server.truphone.entity.SimCard;
 import fr.akensys.myoty2024server.truphone.models.SimCardResponse;
+import fr.akensys.myoty2024server.truphone.models.SimCardUpdateInfo;
+import fr.akensys.myoty2024server.truphone.models.SimCardUpdateStatus;
 import fr.akensys.myoty2024server.truphone.models.SimCardResponse.Tags;
 import fr.akensys.myoty2024server.truphone.repository.SimCardRepo;
 import jakarta.transaction.Transactional;
@@ -65,7 +68,58 @@ public class SimCardService {
             .build();
     }
 
+
     public List<SimCard> getAllSimCardsInDb() {
         return simCardRepo.findAll();
     }
+
+
+    public void patchSimCard(SimCard simCard, SimCardUpdateInfo simCardUpdate) {
+        simCard.setIccid(simCardUpdate.getIccid() != null ? simCardUpdate.getIccid() : simCard.getIccid());
+        simCard.setLabel(simCardUpdate.getLabel() != null ? simCardUpdate.getLabel() : simCard.getLabel());
+        
+        simCardRepo.save(simCard);
+    }
+
+    
+    public void updateSimCard(Long iccid, SimCardUpdateInfo requestUpdate)
+    {
+        SimCard simCard = simCardRepo.findByIccid(iccid).orElseThrow(() -> new SimCardNotFoundException("Aucune carte SIM trouvé avec cet iccid : " + iccid));
+        webClientBuilder.build()
+        .patch()
+        .uri(URL + "v2.2/sims/" +iccid)
+            .header("Authorization", "Token " + TOKEN)
+            .bodyValue(requestUpdate)
+            .retrieve()
+            .bodyToMono(SimCardResponse.class)
+            .block();
+
+        patchSimCard(simCard, requestUpdate);
+    }
+
+    public void changeSimCardStatus(SimCardUpdateStatus request) {
+        
+        List<Long> iccids = request.getIccid();
+
+        for(Long iccid : iccids)
+        {
+            SimCard simCard = simCardRepo.findByIccid(iccid).orElseThrow(() -> new SimCardNotFoundException("Aucune carte SIM trouvé avec cet iccid : " + iccid));
+
+        webClientBuilder.build()
+            .post()
+            .uri(URL + "v2.0/sims/change_status")
+            .header("Authorization", "Token " + TOKEN)
+            .bodyValue(request)
+            .retrieve()
+            .bodyToMono(SimCardResponse.class)  
+            .block();
+
+        System.out.println("updated for: " + iccid);
+        simCard.setSim_status(request.getStatus());
+        simCardRepo.save(simCard);
+        }
+
+    }
+
+
 }
