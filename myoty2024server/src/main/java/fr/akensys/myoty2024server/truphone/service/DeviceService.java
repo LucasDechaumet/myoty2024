@@ -59,5 +59,4 @@ public class DeviceService {
         return deviceRepo.findAll();
     }
 
-
 }

@@ -9,16 +9,19 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import fr.akensys.myoty2024server.truphone.entity.SMS_History;
 import fr.akensys.myoty2024server.truphone.entity.SimCard;
 import fr.akensys.myoty2024server.truphone.entity.TeltonikaDevice;
+import fr.akensys.myoty2024server.truphone.models.SMS_Command;
 import fr.akensys.myoty2024server.truphone.models.SimCardUpdateInfo;
 import fr.akensys.myoty2024server.truphone.models.SimCardUpdateStatus;
 import fr.akensys.myoty2024server.truphone.models.SimCardResponse.Tags;
 import fr.akensys.myoty2024server.truphone.service.DeviceService;
 import fr.akensys.myoty2024server.truphone.service.SimCardService;
+import fr.akensys.myoty2024server.truphone.service.SmsService;
 import fr.akensys.myoty2024server.truphone.service.TagsService;
 import lombok.RequiredArgsConstructor;
-
 
 @RestController
 @RequiredArgsConstructor
@@ -28,6 +31,7 @@ public class TruphoneController {
     public final SimCardService simCardService;
     public final TagsService tagsService;
     public final DeviceService deviceService;
+    public final SmsService smsService;
 
 
     @PostMapping("/getSimCards")
@@ -61,7 +65,7 @@ public class TruphoneController {
     public ResponseEntity<String> createTag(@RequestBody Tags request) {
 
         tagsService.createTag(request);
-        return ResponseEntity.ok(" Tag created successfully");
+        return ResponseEntity.ok(" Tag created successfully" + request);
     }
 
     @DeleteMapping("/deleteTag/{label}")
@@ -85,4 +89,21 @@ public class TruphoneController {
        List<TeltonikaDevice> teltonikaDevices=  deviceService.getAllDevicesInDb();
         return ResponseEntity.ok(teltonikaDevices);
     }
+
+    @PostMapping("/sendSms")
+    public ResponseEntity<String> sendSms(@RequestBody SMS_Command request) {
+        
+        smsService.sendSms(request);
+        return ResponseEntity.ok((" sms sent : " + request));
+    }
+
+    @PostMapping("/getSmsHistory")
+    public ResponseEntity<List<SMS_History>> getSmsHistory() {
+
+        smsService.getSmsHistory();
+       List<SMS_History> sms_Histories =  smsService.getAllSmsInDb();
+        return ResponseEntity.ok(sms_Histories);
+    }
+    
+    
 }
