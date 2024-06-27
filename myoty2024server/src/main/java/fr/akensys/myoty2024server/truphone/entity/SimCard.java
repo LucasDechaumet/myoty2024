@@ -51,9 +51,13 @@ public class SimCard {
 
     private String smsMt;
 
-    private Long imei;
+    private Long device;
 
     private List<String> tags;
+
+    private String country;
+    
+    private String network;
 
 }
 

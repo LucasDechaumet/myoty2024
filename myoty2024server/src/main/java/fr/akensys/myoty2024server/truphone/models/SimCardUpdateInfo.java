@@ -7,5 +7,6 @@ public class SimCardUpdateInfo {
 
     private Long iccid; 
     private String label;
+    private String description;
     
 }
