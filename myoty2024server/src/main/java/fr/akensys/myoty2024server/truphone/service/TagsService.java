@@ -6,9 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import fr.akensys.myoty2024server.error.SimCardNotFoundException;
-import fr.akensys.myoty2024server.truphone.entity.SimCard;
 import fr.akensys.myoty2024server.truphone.entity.TagsEntity;
-import fr.akensys.myoty2024server.truphone.models.SimCardResponse;
 import fr.akensys.myoty2024server.truphone.models.SimCardResponse.Tags;
 import fr.akensys.myoty2024server.truphone.repository.SimCardRepo;
 import fr.akensys.myoty2024server.truphone.repository.TagsRepo;

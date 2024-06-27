@@ -10,9 +10,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import fr.akensys.myoty2024server.truphone.entity.SimCard;
+import fr.akensys.myoty2024server.truphone.entity.TeltonikaDevice;
 import fr.akensys.myoty2024server.truphone.models.SimCardUpdateInfo;
 import fr.akensys.myoty2024server.truphone.models.SimCardUpdateStatus;
 import fr.akensys.myoty2024server.truphone.models.SimCardResponse.Tags;
+import fr.akensys.myoty2024server.truphone.service.DeviceService;
 import fr.akensys.myoty2024server.truphone.service.SimCardService;
 import fr.akensys.myoty2024server.truphone.service.TagsService;
 import lombok.RequiredArgsConstructor;
@@ -25,20 +27,16 @@ public class TruphoneController {
 
     public final SimCardService simCardService;
     public final TagsService tagsService;
+    public final DeviceService deviceService;
 
 
     @PostMapping("/getSimCards")
     public ResponseEntity<List<SimCard>> getSimCards()
     {
        simCardService.saveSimCardsFromApi();
+       simCardService.updateAllSimCardsWithLatestCdrData();
        List<SimCard> simCards =  simCardService.getAllSimCardsInDb();
         return ResponseEntity.ok(simCards);
-    }
-
-@PostMapping("/updateAllSimCardCdr")
-    public ResponseEntity<String> updateSimCardCdr() {
-        simCardService.updateAllSimCardsWithLatestCdrData();
-        return ResponseEntity.ok("SimCard updated with latest CDR data");
     }
 
     @PatchMapping("/setSimCard/{iccid}")
@@ -80,5 +78,11 @@ public class TruphoneController {
     //     return ResponseEntity.ok("tag:" + label + " is assigned");
     // }
     
-
+    @PostMapping("/getDevices")
+    public ResponseEntity<List<TeltonikaDevice>> getDevices()
+    {
+       deviceService.saveDeviceFromApi();
+       List<TeltonikaDevice> teltonikaDevices=  deviceService.getAllDevicesInDb();
+        return ResponseEntity.ok(teltonikaDevices);
+    }
 }

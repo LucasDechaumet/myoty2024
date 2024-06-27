@@ -1,7 +1,6 @@
 package fr.akensys.myoty2024server.truphone.entity;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -13,6 +12,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,42 +23,43 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table(name = "sim_card", uniqueConstraints = @UniqueConstraint(columnNames = "iccid"))
-public class SimCard {
+@Table(name = "teltonika_device", uniqueConstraints = @UniqueConstraint(columnNames = "imei"))
+public class TeltonikaDevice {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private long id;
+
+    @Size(max = 50)
+    private String imei ; 
+
+    @Size(max=20)
+    private String simCard;
 
     @CreationTimestamp
     @Column(updatable = false)
-    private LocalDateTime created_at;
+    private LocalDateTime created_at; 
 
     @UpdateTimestamp
     private LocalDateTime updated_at;
 
-    @Column(unique = true)
-    private Long iccid;  
+    private String date_first_registered;
 
-    private String label;
-
-    private Long primaryMsisdn;
-
-    private String rate_plan;
-
-    private String sim_status;
-
-    private String smsMo;
-
-    private String smsMt;
-
-    private Long device;
-
-    private List<String> tags;
-
-    private String country;
     
-    private String network;
+    @Size(max=100)
+    private String manufacturer;
+
+    @Size(max=50) 
+    private String model;
+
+    private String name;
+
+    private String category;
+
+    private double latitude; 
+
+    private double longitude;
+
+    private double speed;
 
 }
-

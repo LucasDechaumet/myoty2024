@@ -3,6 +3,7 @@ package fr.akensys.myoty2024server.truphone.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -93,7 +94,6 @@ public class SimCardService {
             .label(response.getLabel())
             .primaryMsisdn(response.getPrimaryMsisdn())
             .rate_plan(response.getSubscription().getServicePackId())
-            .device(response.getImei())
             .sim_status(response.getSubscription().getSubscriptionStatus())
             .smsMo(response.getSubscription().getBearerServices().getSmsMo())
             .smsMt(response.getSubscription().getBearerServices().getSmsMt())
@@ -110,17 +110,18 @@ public class SimCardService {
     public void patchSimCard(SimCard simCard, SimCardUpdateInfo simCardUpdate) {
         simCard.setIccid(simCardUpdate.getIccid() != null ? simCardUpdate.getIccid() : simCard.getIccid());
         simCard.setLabel(simCardUpdate.getLabel() != null ? simCardUpdate.getLabel() : simCard.getLabel());
-        
         simCardRepo.save(simCard);
     }
 
     
     public void updateSimCard(Long iccid, SimCardUpdateInfo requestUpdate)
     {
+        System.out.println("token = " + TOKEN);
+        System.out.println("Request body: " + requestUpdate);
         SimCard simCard = simCardRepo.findByIccid(iccid).orElseThrow(() -> new SimCardNotFoundException("Aucune carte SIM trouvé avec cet iccid : " + iccid));
         webClientBuilder.build()
         .patch()
-        .uri(URL + "v2.2/sims/" +iccid)
+        .uri(URL + "v2.2/sims/" + iccid)
             .header("Authorization", "Token " + TOKEN)
             .bodyValue(requestUpdate)
             .retrieve()
