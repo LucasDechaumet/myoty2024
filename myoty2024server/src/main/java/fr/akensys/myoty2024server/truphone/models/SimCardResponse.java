@@ -59,7 +59,7 @@ public class SimCardResponse {
     @Data
     public static class Tags 
     {
-        private List<String> simCards;
+        private List<Long> simCards;
         private String label;
         private String description;
     }
