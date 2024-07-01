@@ -5,7 +5,7 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class SMS_Info {
+public class SmsInfo {
 
     private Long id;
     private String dateSubmitted; 

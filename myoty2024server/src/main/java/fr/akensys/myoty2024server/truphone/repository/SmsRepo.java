@@ -2,9 +2,9 @@ package fr.akensys.myoty2024server.truphone.repository;
 
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
-import fr.akensys.myoty2024server.truphone.entity.SMS_History;
+import fr.akensys.myoty2024server.truphone.entity.SmsHistory;
 
-public interface SmsRepo extends JpaRepository<SMS_History, Long> {
+public interface SmsRepo extends JpaRepository<SmsHistory, Long> {
 
-    Optional<SMS_History> findById(Long id); 
+    Optional<SmsHistory> findById(Long id); 
 }

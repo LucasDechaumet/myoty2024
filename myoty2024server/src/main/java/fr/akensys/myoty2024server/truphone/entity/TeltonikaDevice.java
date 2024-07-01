@@ -5,13 +5,15 @@ import java.time.LocalDateTime;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,7 +25,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table(name = "teltonika_device", uniqueConstraints = @UniqueConstraint(columnNames = "imei"))
 public class TeltonikaDevice {
 
     @Id
@@ -31,10 +32,13 @@ public class TeltonikaDevice {
     private long id;
 
     @Size(max = 50)
+    @Column(unique = true)
     private String imei ; 
 
     @Size(max=20)
-    private String simCard;
+    @OneToOne(mappedBy = "teltonikaDevice", cascade = CascadeType.ALL)
+    @JsonBackReference
+    private SimCard simCard;
 
     @CreationTimestamp
     @Column(updatable = false)

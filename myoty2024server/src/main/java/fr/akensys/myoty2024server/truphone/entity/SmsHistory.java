@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class SMS_History {
+public class SmsHistory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

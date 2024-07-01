@@ -8,11 +8,12 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import fr.akensys.myoty2024server.error.SimCardNotFoundException;
 import fr.akensys.myoty2024server.truphone.entity.SimCard;
-import fr.akensys.myoty2024server.truphone.models.CdrResponse;
+import fr.akensys.myoty2024server.truphone.entity.TeltonikaDevice;
 import fr.akensys.myoty2024server.truphone.models.SimCardResponse;
 import fr.akensys.myoty2024server.truphone.models.SimCardUpdateInfo;
 import fr.akensys.myoty2024server.truphone.models.SimCardUpdateStatus;
-import fr.akensys.myoty2024server.truphone.models.SimCardResponse.Tags;
+import fr.akensys.myoty2024server.truphone.models.SimCardResponse.TagsReponse;
+import fr.akensys.myoty2024server.truphone.repository.DeviceRepo;
 import fr.akensys.myoty2024server.truphone.repository.SimCardRepo;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,8 @@ import reactor.core.publisher.Mono;
 @Transactional
 @RequiredArgsConstructor
 public class SimCardService {
-
+    
+    private final DeviceRepo deviceRepo;
     private final SimCardRepo simCardRepo;
     private final WebClient.Builder webClientBuilder;
     private final String TOKEN = "456554db3785c41d24bc16e8df3819a5d163ceb2";
@@ -31,7 +33,7 @@ public class SimCardService {
     public void saveSimCardsFromApi() {
         webClientBuilder.build()
             .get()
-            .uri(URL + "v2.0/sims")
+            .uri(URL + "v2.2/sims")
             .header("Authorization", "Token " + TOKEN)
             .retrieve()
             .bodyToFlux(SimCardResponse.class)
@@ -50,54 +52,119 @@ public class SimCardService {
 
     }
 
-    public void updateAllSimCardsWithLatestCdrData() {
+    public void updateAllSimCardsWithLatestSeenDate() {
         List<SimCard> simCards = simCardRepo.findAll();
         for (SimCard simCard : simCards) {
-            updateSimCardWithLatestCdrData(simCard.getIccid());
+            updateSimCardWithLatestSeenDate(simCard.getIccid());
         }
     }
     
-    public void updateSimCardWithLatestCdrData(Long iccid) {
-        List<CdrResponse> cdrResponses = webClientBuilder.build()
+    public void updateSimCardWithLatestSeenDate(Long iccid) {
+        List<SimCardResponse> simCardResponses = webClientBuilder.build()
             .get()
-            .uri(URL + "v2.0/sims/" + iccid + "/cdrs")
+            .uri(URL + "v2.0/sims/" + iccid + "/locations")
             .header("Authorization", "Token " + TOKEN)
             .retrieve()
-            .bodyToFlux(CdrResponse.class)
+            .bodyToFlux(SimCardResponse.class)
             .collectList()
             .block();
 
-        if (cdrResponses != null && !cdrResponses.isEmpty()) {
-            CdrResponse latestCdr = cdrResponses.get(0); // Récupérer la première entrée
+        if (simCardResponses != null && !simCardResponses.isEmpty()) {
+            SimCardResponse latestCdr = simCardResponses.get(0); // Récupérer la première entrée
 
             SimCard simCard = simCardRepo.findByIccid(iccid)
                 .orElseThrow(() -> new SimCardNotFoundException("Aucune carte SIM trouvée avec cet iccid : " + iccid));
 
-            simCard.setCountry(latestCdr.getCountry());
-            simCard.setNetwork(latestCdr.getNetwork());
+            simCard.setLast_seen_date(latestCdr.getDate());
 
             simCardRepo.save(simCard);
         }
     }
 
+    public void updateAllSimCardWithDataStatus() {
+        List<SimCard> simCards = simCardRepo.findAll();
+        for (SimCard simCard : simCards) {
+            updateSimCardWithDataStatus(simCard.getIccid());
+        }
+    }
+    
+    public void updateSimCardWithDataStatus(Long iccid) {
+        List<SimCardResponse> simCardResponses = webClientBuilder.build()
+            .get()
+            .uri(URL + "v2.2/sims/" + iccid + "/status")
+            .header("Authorization", "Token " + TOKEN)
+            .retrieve()
+            .bodyToFlux(SimCardResponse.class)
+            .collectList()
+            .block();
+
+        if (simCardResponses != null && !simCardResponses.isEmpty()) {
+            SimCardResponse latestData = simCardResponses.get(0); // Récupérer la première entrée
+
+            SimCard simCard = simCardRepo.findByIccid(iccid)
+                .orElseThrow(() -> new SimCardNotFoundException("Aucune carte SIM trouvée avec cet iccid : " + iccid));
+
+                simCard.setSimStatus(latestData.getStatus().getSim_card_service());
+                simCard.setDataStatus(latestData.getStatus().getData_service());
+                simCard.setSms_Mo_status(latestData.getStatus().getSms_mo_service());
+                simCard.setSms_Mt_status(latestData.getStatus().getSms_mt_service());
+            simCardRepo.save(simCard);
+        }
+    }
+
+    public void updateAdressIp() {
+        List<SimCardResponse> responses = webClientBuilder.build()
+            .get()
+            .uri(URL + "v2.0/sims/ongoing_sessions")
+            .header("Authorization", "Token " + TOKEN)
+            .retrieve()
+            .bodyToFlux(SimCardResponse.class)
+            .collectList()
+            .block();
+
+        if (responses != null) {
+            for (SimCardResponse response : responses) {
+                updateSimCardIp(response.getIccid(), response.getIpAddress());
+            }
+        }
+    }
+
+    private void updateSimCardIp(Long iccid, String ipAddress) {
+        SimCard simCard = simCardRepo.findByIccid(iccid)
+            .orElseThrow(() -> new SimCardNotFoundException("Aucune carte SIM trouvé avec cet iccid : " + iccid));
+        
+        simCard.setIP_address(ipAddress);
+        simCardRepo.save(simCard);
+    }
+
+
+
     private SimCard buildSimCard(SimCardResponse response) {
 
-        List<Tags> tags = response.getTags();
+        List<TagsReponse> tags = response.getTags();
         List<String> tags_label = new ArrayList<>();
-        for (Tags tag : tags) {
+        for (TagsReponse tag : tags) {
             tags_label.add(tag.getLabel());
         }
 
-        return SimCard.builder()
+        SimCard simCard =  SimCard.builder()
             .iccid(response.getIccid())
             .label(response.getLabel())
-            .primaryMsisdn(response.getPrimaryMsisdn())
-            .rate_plan(response.getSubscription().getServicePackId())
-            .sim_status(response.getSubscription().getSubscriptionStatus())
-            .smsMo(response.getSubscription().getBearerServices().getSmsMo())
-            .smsMt(response.getSubscription().getBearerServices().getSmsMt())
+            .provision_Date(response.getDates().getProvisionDate())
+            .Date_first_Activated(response.getDates().getFirstActivationDate())
             .tags(tags_label)
             .build();
+
+            if (response.getImei() != null) {
+            TeltonikaDevice device = deviceRepo.findByImei(response.getImei())
+                .orElse(null);
+            if (device != null) {
+                simCard.setTeltonikaDevice(device);
+                simCard.setDeviceName(simCard.getTeltonikaDevice().getName());
+            }
+        }
+
+        return simCard;
     }
 
 
@@ -113,8 +180,9 @@ public class SimCardService {
     }
 
     
-    public void updateSimCard(Long iccid, SimCardUpdateInfo requestUpdate)
+    public void updateSimCard(SimCardUpdateInfo requestUpdate)
     {
+        Long iccid = requestUpdate.getIccid();
         System.out.println("token = " + TOKEN);
         System.out.println("Request body: " + requestUpdate);
         SimCard simCard = simCardRepo.findByIccid(iccid).orElseThrow(() -> new SimCardNotFoundException("Aucune carte SIM trouvé avec cet iccid : " + iccid));
@@ -148,7 +216,7 @@ public class SimCardService {
             .block();
 
         System.out.println("sim status updated for: " + iccid);
-        simCard.setSim_status(request.getStatus());
+        simCard.setSimStatus(request.getStatus().getSim_card_service());
         simCardRepo.save(simCard);
         }
 
@@ -172,7 +240,7 @@ public class SimCardService {
             .block();
 
         System.out.println("data status updated for: " + iccid);
-        simCard.setSim_status(request.getStatus());
+        simCard.setDataStatus(request.getStatus().getData_service());
         simCardRepo.save(simCard);
         }
     }

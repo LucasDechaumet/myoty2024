@@ -17,11 +17,14 @@ public class SimCardResponse {
     private List<String> imsis;
     private Map<String, String> gsmKeys;
     private Dates dates;
-    private Long imei;
+    private String imei;
     private Subscription subscription;
     private List<String> attributes;
-    private List<Tags> tags;
-    private String location_tag;
+    private List<TagsReponse> tags;
+    private LocationTag location_tag;
+    private String date;
+    private String ipAddress;
+    private Status status; 
 
     @Data
     public static class Dates {
@@ -57,11 +60,29 @@ public class SimCardResponse {
     }
 
     @Data
-    public static class Tags 
+    public static class TagsReponse
     {
-        private List<Long> simCards;
+        private List<String> simCards;
         private String label;
         private String description;
     }
+
+    @Data
+    public static class LocationTag
+    {
+        private String label; 
+        private String lng; 
+        private String lat; 
+    }
+
+    @Data
+    public static class Status
+    {
+        private String sim_card_service;
+        private String data_service; 
+        private String sms_mo_service;
+        private String sms_mt_service;
+    }
+    
 }
 

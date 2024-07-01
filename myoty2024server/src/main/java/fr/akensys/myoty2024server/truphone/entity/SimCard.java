@@ -6,13 +6,15 @@ import java.util.List;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,7 +25,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table(name = "sim_card", uniqueConstraints = @UniqueConstraint(columnNames = "iccid"))
 public class SimCard {
 
     @Id
@@ -42,23 +43,32 @@ public class SimCard {
 
     private String label;
 
-    private Long primaryMsisdn;
+    private String SimStatus; 
 
-    private String rate_plan;
+    private String DataStatus; 
 
-    private String sim_status;
+    private String Sms_Mo_status; 
 
-    private String smsMo;
+    private String Sms_Mt_status;
 
-    private String smsMt;
+    @OneToOne
+    @JoinColumn(name = "teltonika_device_id")
+    @JsonManagedReference
+    private TeltonikaDevice teltonikaDevice;
 
-    private Long device;
+    private String deviceName;
 
     private List<String> tags;
 
-    private String country;
+    private String provision_Date;
+
+    private String Date_first_Activated;
+
+    private String last_seen_date; 
+
+    private String IP_address;
+
     
-    private String network;
 
 }
 

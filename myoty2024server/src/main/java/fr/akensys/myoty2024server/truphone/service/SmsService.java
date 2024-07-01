@@ -7,11 +7,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import fr.akensys.myoty2024server.error.SimCardNotFoundException;
-import fr.akensys.myoty2024server.truphone.entity.SMS_History;
-import fr.akensys.myoty2024server.truphone.entity.SimCard;
-import fr.akensys.myoty2024server.truphone.models.SMS_Command;
-import fr.akensys.myoty2024server.truphone.models.SMS_Info;
-import fr.akensys.myoty2024server.truphone.models.SMS_Info.DeliveryReport;
+import fr.akensys.myoty2024server.truphone.entity.SmsHistory;
+import fr.akensys.myoty2024server.truphone.models.SmsCommand;
+import fr.akensys.myoty2024server.truphone.models.SmsInfo;
+import fr.akensys.myoty2024server.truphone.models.SmsInfo.DeliveryReport;
 import fr.akensys.myoty2024server.truphone.repository.SimCardRepo;
 import fr.akensys.myoty2024server.truphone.repository.SmsRepo;
 import jakarta.transaction.Transactional;
@@ -29,13 +28,13 @@ public class SmsService {
     private final String TOKEN = "456554db3785c41d24bc16e8df3819a5d163ceb2";
     private static final String URL = "https://iot.truphone.com/api/";
 
-    public void sendSms(SMS_Command request)
+    public void sendSms(SmsCommand request)
     {
     List<Long> iccids = request.getIccid();
 
         for(Long iccid : iccids)
         {
-            SimCard simCard = simCardRepo.findByIccid(iccid).orElseThrow(() -> new SimCardNotFoundException("Aucune carte SIM trouvé avec cet iccid : " + iccid));
+            simCardRepo.findByIccid(iccid).orElseThrow(() -> new SimCardNotFoundException("Aucune carte SIM trouvé avec cet iccid : " + iccid));
 
         webClientBuilder.build()
             .post()
@@ -43,7 +42,7 @@ public class SmsService {
             .header("Authorization", "Token " + TOKEN)
             .bodyValue(request)
             .retrieve()
-            .bodyToMono(SMS_Command.class)  
+            .bodyToMono(SmsCommand.class)  
             .block();
 
         System.out.println("SMS sent for: " + iccid);
@@ -57,14 +56,14 @@ public class SmsService {
         .uri(URL + "v2.0/sims/send_sms/status")
         .header("Authorization", "Token " + TOKEN)
         .retrieve()
-        .bodyToFlux(SMS_Info.class)
+        .bodyToFlux(SmsInfo.class)
         .flatMap((response) -> {
             return smsRepo.findById(response.getId())
                     .map(existingSms -> {
                         return Mono.empty();
                     })
                     .orElseGet(() -> {
-                        SMS_History sms_History = buildSmsHistory(response);
+                        SmsHistory sms_History = buildSmsHistory(response);
                         smsRepo.save(sms_History);
                         return Mono.empty();
                     });
@@ -72,7 +71,7 @@ public class SmsService {
         .blockLast();
     }
 
-    public SMS_History buildSmsHistory(SMS_Info response) {
+    public SmsHistory buildSmsHistory(SmsInfo response) {
 
         List<DeliveryReport> deliveryReports = response.getDeliveryReport();
         List<String> deliveryStatus = new ArrayList<>();
@@ -81,7 +80,7 @@ public class SmsService {
             deliveryStatus.add(deliveryReport.getDeliveryStatus());
         }
 
-        return SMS_History.builder()
+        return SmsHistory.builder()
         .id(response.getId())
         .content(response.getContent())
         .dateSubmitted(response.getDateSubmitted())
@@ -89,7 +88,7 @@ public class SmsService {
         .build();
     }
 
-    public List<SMS_History> getAllSmsInDb() {
+    public List<SmsHistory> getAllSmsInDb() {
         return smsRepo.findAll();
     }
 }
